@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: tapegarden-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tapegarden_fm
+      POSTGRES_USER: tapegarden
+      POSTGRES_PASSWORD: tapegarden123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - tapegarden-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: tapegarden-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - tapegarden-network
+
+  # Backend API
+  backend:
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    container_name: tapegarden-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: postgresql://tapegarden:tapegarden123@postgres:5432/tapegarden_fm
+      JWT_SECRET: your-production-secret-key
+      REDIS_URL: redis://redis:6379
+      SPOTIFY_CLIENT_ID: ${SPOTIFY_CLIENT_ID}
+      SPOTIFY_CLIENT_SECRET: ${SPOTIFY_CLIENT_SECRET}
+      SPOTIFY_REDIRECT_URI: http://localhost:5000/api/auth/spotify/callback
+      APPLE_MUSIC_DEVELOPER_TOKEN: ${APPLE_MUSIC_DEVELOPER_TOKEN}
+      APPLE_MUSIC_KEY_ID: ${APPLE_MUSIC_KEY_ID}
+      APPLE_MUSIC_TEAM_ID: ${APPLE_MUSIC_TEAM_ID}
+      APPLE_MUSIC_PRIVATE_KEY: ${APPLE_MUSIC_PRIVATE_KEY}
+    volumes:
+      - ../server:/app
+      - /app/node_modules
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - tapegarden-network
+
+  # Frontend
+  frontend:
+    build:
+      context: ../client
+      dockerfile: Dockerfile
+    container_name: tapegarden-frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://localhost:5000/api
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - tapegarden-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  tapegarden-network:
+    driver: bridge

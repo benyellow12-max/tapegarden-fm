@@ -1,0 +1,32 @@
+{
+  "name": "tapegarden-fm",
+  "version": "1.0.0",
+  "description": "A gamified music streaming badge tracking platform",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "npm run build:server && npm run build:client",
+    "build:server": "cd server && npm run build",
+    "build:client": "cd client && npm run build",
+    "start": "cd server && npm start",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "docker:dev": "docker-compose -f docker/docker-compose.yml up",
+    "docker:build": "docker-compose -f docker/docker-compose.yml build",
+    "docker:down": "docker-compose -f docker/docker-compose.yml down"
+  },
+  "keywords": [
+    "music",
+    "streaming",
+    "badges",
+    "gamification",
+    "spotify",
+    "apple-music"
+  ],
+  "author": "TapeGarden FM Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
