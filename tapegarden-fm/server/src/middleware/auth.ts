@@ -38,8 +38,8 @@ export const authenticateToken = async (
       });
     }
 
-    req.user = user;
-    next();
+req.user = user;
+return next();
   } catch (error) {
     logger.error('Authentication error:', error);
     res.status(403).json({
